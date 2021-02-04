@@ -76,6 +76,7 @@ func (d *API) dealById(w http.ResponseWriter, r *http.Request) (interface{}, err
 	if deal == nil {
 		return NotFound{Message: fmt.Sprintf("deal with deal id %d not found", dealID)}, nil
 	}
+	deal.MerkleRoot = db.MerkleRoot // TODO: remove global merkle root
 	return deal, err
 }
 

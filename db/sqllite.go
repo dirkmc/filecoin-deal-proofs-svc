@@ -17,6 +17,7 @@ import (
 const dsn = "./mock/sqlite-database.db"
 
 var log = logging.Logger("db")
+var MerkleRoot string
 
 type DB interface {
 	DealByID(dealID uint64) (*Deal, error)
@@ -42,6 +43,7 @@ func (db *liteDB) Close() error {
 }
 
 type Deal struct {
+	MerkleRoot  string
 	DealID      *big.Int
 	DataCID     string
 	PieceCID    string
@@ -139,7 +141,8 @@ func (db *liteDB) GetAllDeals() error {
 	}
 
 	mr := tree.MerkleRoot()
-	log.Debugw("merkle root", "root", mr)
+	MerkleRoot = common.BytesToHash(mr).Hex()
+	log.Debugw("merkle root", "root", MerkleRoot)
 
 	for i, d := range deals {
 		a, _, err := tree.GetMerklePath(d)
