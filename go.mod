@@ -3,6 +3,8 @@ module github.com/dirkmc/filecoin-deal-proofs-svc
 go 1.15
 
 require (
+	github.com/cbergoon/merkletree v0.2.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/gorilla/mux v1.8.0
 	github.com/ipfs/go-log v1.0.4 // indirect
 	github.com/ipfs/go-log/v2 v2.0.5

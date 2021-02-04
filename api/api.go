@@ -3,22 +3,47 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/dirkmc/filecoin-deal-proofs-svc/db"
 	logging "github.com/ipfs/go-log/v2"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/xerrors"
-	"net/http"
-	"strconv"
 )
 
 var log = logging.Logger("daemon")
 
 type API struct {
-	db db.DB
+	dbmu sync.Mutex
+	db   db.DB
 }
 
 func New(db db.DB) *API {
 	return &API{db: db}
+}
+
+func (d *API) FetchDealsPeriodically() {
+	ticker := time.NewTicker(3 * time.Second)
+	done := make(chan struct{})
+
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case _ = <-ticker.C:
+				log.Debugw("fetch deals")
+
+				d.dbmu.Lock()
+				d.db.GetAllDeals()
+				d.dbmu.Unlock()
+
+			}
+		}
+	}()
 }
 
 func (d *API) DealHandler() func(w http.ResponseWriter, r *http.Request) {

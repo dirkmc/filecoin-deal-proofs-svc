@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
+	"net/http"
+	"time"
+
 	"github.com/dirkmc/filecoin-deal-proofs-svc/db"
 	"github.com/dirkmc/filecoin-deal-proofs-svc/web"
 	logging "github.com/ipfs/go-log/v2"
-	"net/http"
-	"time"
 
 	"github.com/dirkmc/filecoin-deal-proofs-svc/api"
 )
@@ -31,7 +32,10 @@ func run() error {
 		return err
 	}
 
-	srv, err := web.New(api.New(apidb))
+	a := api.New(apidb)
+	a.FetchDealsPeriodically()
+
+	srv, err := web.New(a)
 	if err != nil {
 		return err
 	}
