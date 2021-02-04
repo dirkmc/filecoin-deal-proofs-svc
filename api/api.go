@@ -26,8 +26,12 @@ func New(db db.DB) *API {
 }
 
 func (d *API) FetchDealsPeriodically() {
-	ticker := time.NewTicker(3 * time.Second)
+	//ticker := time.NewTicker(3600 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
 	done := make(chan struct{})
+
+	// TODO: this channel is needed for demo to block the ticker after first iteration
+	smth := make(chan struct{})
 
 	go func() {
 		for {
@@ -40,6 +44,8 @@ func (d *API) FetchDealsPeriodically() {
 				d.dbmu.Lock()
 				d.db.GetAllDeals()
 				d.dbmu.Unlock()
+
+				<-smth
 
 			}
 		}

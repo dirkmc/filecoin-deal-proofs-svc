@@ -72,7 +72,8 @@ func createTable(db *sql.DB) error {
 		"Provider" string,
 		"StartEpoch" integer,
 		"EndEpoch" integer,
-		"SignedEpoch" integer
+		"SignedEpoch" integer,
+		"Proof" string
 	  );`
 
 	statement, err := db.Prepare(createSQL)
