@@ -20,6 +20,7 @@ var (
 	_ = big.NewInt
 	_ = strings.NewReader
 	_ = ethereum.NotFound
+	_ = abi.U256
 	_ = bind.Bind
 	_ = common.Big1
 	_ = types.BloomLookup
@@ -137,7 +138,7 @@ func bindFilecoinService(address common.Address, caller bind.ContractCaller, tra
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_FilecoinService *FilecoinServiceRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+func (_FilecoinService *FilecoinServiceRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
 	return _FilecoinService.Contract.FilecoinServiceCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +157,7 @@ func (_FilecoinService *FilecoinServiceRaw) Transact(opts *bind.TransactOpts, me
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_FilecoinService *FilecoinServiceCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+func (_FilecoinService *FilecoinServiceCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
 	return _FilecoinService.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -171,259 +172,193 @@ func (_FilecoinService *FilecoinServiceTransactorRaw) Transact(opts *bind.Transa
 	return _FilecoinService.Contract.contract.Transact(opts, method, params...)
 }
 
-// Managers is a free data retrieval call binding the contract method 0xfdff9b4d.
-//
-// Solidity: function managers(address ) view returns(bool)
-func (_FilecoinService *FilecoinServiceCaller) Managers(opts *bind.CallOpts, arg0 common.Address) (bool, error) {
-	var out []interface{}
-	err := _FilecoinService.contract.Call(opts, &out, "managers", arg0)
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// Managers is a free data retrieval call binding the contract method 0xfdff9b4d.
-//
-// Solidity: function managers(address ) view returns(bool)
-func (_FilecoinService *FilecoinServiceSession) Managers(arg0 common.Address) (bool, error) {
-	return _FilecoinService.Contract.Managers(&_FilecoinService.CallOpts, arg0)
-}
-
-// Managers is a free data retrieval call binding the contract method 0xfdff9b4d.
-//
-// Solidity: function managers(address ) view returns(bool)
-func (_FilecoinService *FilecoinServiceCallerSession) Managers(arg0 common.Address) (bool, error) {
-	return _FilecoinService.Contract.Managers(&_FilecoinService.CallOpts, arg0)
-}
-
-// MerkleRoot is a free data retrieval call binding the contract method 0x2eb4a7ab.
-//
-// Solidity: function merkleRoot() view returns(bytes32)
-func (_FilecoinService *FilecoinServiceCaller) MerkleRoot(opts *bind.CallOpts) ([32]byte, error) {
-	var out []interface{}
-	err := _FilecoinService.contract.Call(opts, &out, "merkleRoot")
-
-	if err != nil {
-		return *new([32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
-
-	return out0, err
-
-}
-
-// MerkleRoot is a free data retrieval call binding the contract method 0x2eb4a7ab.
-//
-// Solidity: function merkleRoot() view returns(bytes32)
-func (_FilecoinService *FilecoinServiceSession) MerkleRoot() ([32]byte, error) {
-	return _FilecoinService.Contract.MerkleRoot(&_FilecoinService.CallOpts)
-}
-
-// MerkleRoot is a free data retrieval call binding the contract method 0x2eb4a7ab.
-//
-// Solidity: function merkleRoot() view returns(bytes32)
-func (_FilecoinService *FilecoinServiceCallerSession) MerkleRoot() ([32]byte, error) {
-	return _FilecoinService.Contract.MerkleRoot(&_FilecoinService.CallOpts)
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_FilecoinService *FilecoinServiceCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _FilecoinService.contract.Call(opts, &out, "owner")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_FilecoinService *FilecoinServiceSession) Owner() (common.Address, error) {
-	return _FilecoinService.Contract.Owner(&_FilecoinService.CallOpts)
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_FilecoinService *FilecoinServiceCallerSession) Owner() (common.Address, error) {
-	return _FilecoinService.Contract.Owner(&_FilecoinService.CallOpts)
-}
-
-// State is a free data retrieval call binding the contract method 0xc19d93fb.
-//
-// Solidity: function state() view returns(uint256 updatedAtTimestamp, bytes32 merkleRoot, uint256 epoch)
-func (_FilecoinService *FilecoinServiceCaller) State(opts *bind.CallOpts) (struct {
-	UpdatedAtTimestamp *big.Int
-	MerkleRoot         [32]byte
-	Epoch              *big.Int
-}, error) {
-	var out []interface{}
-	err := _FilecoinService.contract.Call(opts, &out, "state")
-
-	outstruct := new(struct {
-		UpdatedAtTimestamp *big.Int
-		MerkleRoot         [32]byte
-		Epoch              *big.Int
-	})
-
-	outstruct.UpdatedAtTimestamp = out[0].(*big.Int)
-	outstruct.MerkleRoot = out[1].([32]byte)
-	outstruct.Epoch = out[2].(*big.Int)
-
-	return *outstruct, err
-
-}
-
-// State is a free data retrieval call binding the contract method 0xc19d93fb.
-//
-// Solidity: function state() view returns(uint256 updatedAtTimestamp, bytes32 merkleRoot, uint256 epoch)
-func (_FilecoinService *FilecoinServiceSession) State() (struct {
-	UpdatedAtTimestamp *big.Int
-	MerkleRoot         [32]byte
-	Epoch              *big.Int
-}, error) {
-	return _FilecoinService.Contract.State(&_FilecoinService.CallOpts)
-}
-
-// State is a free data retrieval call binding the contract method 0xc19d93fb.
-//
-// Solidity: function state() view returns(uint256 updatedAtTimestamp, bytes32 merkleRoot, uint256 epoch)
-func (_FilecoinService *FilecoinServiceCallerSession) State() (struct {
-	UpdatedAtTimestamp *big.Int
-	MerkleRoot         [32]byte
-	Epoch              *big.Int
-}, error) {
-	return _FilecoinService.Contract.State(&_FilecoinService.CallOpts)
-}
-
-// VerifyProof is a free data retrieval call binding the contract method 0x8d834449.
-//
-// Solidity: function verifyProof(string dataCid, string pieceCid, uint256 dealId, string provider, uint256 startEpoch, uint256 endEpoch, uint256 signedEpoch, bytes32[] merkleProof) view returns(bool)
-func (_FilecoinService *FilecoinServiceCaller) VerifyProof(opts *bind.CallOpts, dataCid string, pieceCid string, dealId *big.Int, provider string, startEpoch *big.Int, endEpoch *big.Int, signedEpoch *big.Int, merkleProof [][32]byte) (bool, error) {
-	var out []interface{}
-	err := _FilecoinService.contract.Call(opts, &out, "verifyProof", dataCid, pieceCid, dealId, provider, startEpoch, endEpoch, signedEpoch, merkleProof)
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// VerifyProof is a free data retrieval call binding the contract method 0x8d834449.
-//
-// Solidity: function verifyProof(string dataCid, string pieceCid, uint256 dealId, string provider, uint256 startEpoch, uint256 endEpoch, uint256 signedEpoch, bytes32[] merkleProof) view returns(bool)
-func (_FilecoinService *FilecoinServiceSession) VerifyProof(dataCid string, pieceCid string, dealId *big.Int, provider string, startEpoch *big.Int, endEpoch *big.Int, signedEpoch *big.Int, merkleProof [][32]byte) (bool, error) {
-	return _FilecoinService.Contract.VerifyProof(&_FilecoinService.CallOpts, dataCid, pieceCid, dealId, provider, startEpoch, endEpoch, signedEpoch, merkleProof)
-}
-
-// VerifyProof is a free data retrieval call binding the contract method 0x8d834449.
-//
-// Solidity: function verifyProof(string dataCid, string pieceCid, uint256 dealId, string provider, uint256 startEpoch, uint256 endEpoch, uint256 signedEpoch, bytes32[] merkleProof) view returns(bool)
-func (_FilecoinService *FilecoinServiceCallerSession) VerifyProof(dataCid string, pieceCid string, dealId *big.Int, provider string, startEpoch *big.Int, endEpoch *big.Int, signedEpoch *big.Int, merkleProof [][32]byte) (bool, error) {
-	return _FilecoinService.Contract.VerifyProof(&_FilecoinService.CallOpts, dataCid, pieceCid, dealId, provider, startEpoch, endEpoch, signedEpoch, merkleProof)
-}
-
 // AddManager is a paid mutator transaction binding the contract method 0x2d06177a.
 //
-// Solidity: function addManager(address _manager) returns()
+// Solidity: function addManager(_manager address) returns()
 func (_FilecoinService *FilecoinServiceTransactor) AddManager(opts *bind.TransactOpts, _manager common.Address) (*types.Transaction, error) {
 	return _FilecoinService.contract.Transact(opts, "addManager", _manager)
 }
 
 // AddManager is a paid mutator transaction binding the contract method 0x2d06177a.
 //
-// Solidity: function addManager(address _manager) returns()
+// Solidity: function addManager(_manager address) returns()
 func (_FilecoinService *FilecoinServiceSession) AddManager(_manager common.Address) (*types.Transaction, error) {
 	return _FilecoinService.Contract.AddManager(&_FilecoinService.TransactOpts, _manager)
 }
 
 // AddManager is a paid mutator transaction binding the contract method 0x2d06177a.
 //
-// Solidity: function addManager(address _manager) returns()
+// Solidity: function addManager(_manager address) returns()
 func (_FilecoinService *FilecoinServiceTransactorSession) AddManager(_manager common.Address) (*types.Transaction, error) {
 	return _FilecoinService.Contract.AddManager(&_FilecoinService.TransactOpts, _manager)
 }
 
+// Managers is a paid mutator transaction binding the contract method 0xfdff9b4d.
+//
+// Solidity: function managers( address) returns(bool)
+func (_FilecoinService *FilecoinServiceTransactor) Managers(opts *bind.TransactOpts, arg0 common.Address) (*types.Transaction, error) {
+	return _FilecoinService.contract.Transact(opts, "managers", arg0)
+}
+
+// Managers is a paid mutator transaction binding the contract method 0xfdff9b4d.
+//
+// Solidity: function managers( address) returns(bool)
+func (_FilecoinService *FilecoinServiceSession) Managers(arg0 common.Address) (*types.Transaction, error) {
+	return _FilecoinService.Contract.Managers(&_FilecoinService.TransactOpts, arg0)
+}
+
+// Managers is a paid mutator transaction binding the contract method 0xfdff9b4d.
+//
+// Solidity: function managers( address) returns(bool)
+func (_FilecoinService *FilecoinServiceTransactorSession) Managers(arg0 common.Address) (*types.Transaction, error) {
+	return _FilecoinService.Contract.Managers(&_FilecoinService.TransactOpts, arg0)
+}
+
+// MerkleRoot is a paid mutator transaction binding the contract method 0x2eb4a7ab.
+//
+// Solidity: function merkleRoot() returns(bytes32)
+func (_FilecoinService *FilecoinServiceTransactor) MerkleRoot(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _FilecoinService.contract.Transact(opts, "merkleRoot")
+}
+
+// MerkleRoot is a paid mutator transaction binding the contract method 0x2eb4a7ab.
+//
+// Solidity: function merkleRoot() returns(bytes32)
+func (_FilecoinService *FilecoinServiceSession) MerkleRoot() (*types.Transaction, error) {
+	return _FilecoinService.Contract.MerkleRoot(&_FilecoinService.TransactOpts)
+}
+
+// MerkleRoot is a paid mutator transaction binding the contract method 0x2eb4a7ab.
+//
+// Solidity: function merkleRoot() returns(bytes32)
+func (_FilecoinService *FilecoinServiceTransactorSession) MerkleRoot() (*types.Transaction, error) {
+	return _FilecoinService.Contract.MerkleRoot(&_FilecoinService.TransactOpts)
+}
+
+// Owner is a paid mutator transaction binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() returns(address)
+func (_FilecoinService *FilecoinServiceTransactor) Owner(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _FilecoinService.contract.Transact(opts, "owner")
+}
+
+// Owner is a paid mutator transaction binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() returns(address)
+func (_FilecoinService *FilecoinServiceSession) Owner() (*types.Transaction, error) {
+	return _FilecoinService.Contract.Owner(&_FilecoinService.TransactOpts)
+}
+
+// Owner is a paid mutator transaction binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() returns(address)
+func (_FilecoinService *FilecoinServiceTransactorSession) Owner() (*types.Transaction, error) {
+	return _FilecoinService.Contract.Owner(&_FilecoinService.TransactOpts)
+}
+
 // RemoveManager is a paid mutator transaction binding the contract method 0xac18de43.
 //
-// Solidity: function removeManager(address _manager) returns()
+// Solidity: function removeManager(_manager address) returns()
 func (_FilecoinService *FilecoinServiceTransactor) RemoveManager(opts *bind.TransactOpts, _manager common.Address) (*types.Transaction, error) {
 	return _FilecoinService.contract.Transact(opts, "removeManager", _manager)
 }
 
 // RemoveManager is a paid mutator transaction binding the contract method 0xac18de43.
 //
-// Solidity: function removeManager(address _manager) returns()
+// Solidity: function removeManager(_manager address) returns()
 func (_FilecoinService *FilecoinServiceSession) RemoveManager(_manager common.Address) (*types.Transaction, error) {
 	return _FilecoinService.Contract.RemoveManager(&_FilecoinService.TransactOpts, _manager)
 }
 
 // RemoveManager is a paid mutator transaction binding the contract method 0xac18de43.
 //
-// Solidity: function removeManager(address _manager) returns()
+// Solidity: function removeManager(_manager address) returns()
 func (_FilecoinService *FilecoinServiceTransactorSession) RemoveManager(_manager common.Address) (*types.Transaction, error) {
 	return _FilecoinService.Contract.RemoveManager(&_FilecoinService.TransactOpts, _manager)
 }
 
+// State is a paid mutator transaction binding the contract method 0xc19d93fb.
+//
+// Solidity: function state() returns(updatedAtTimestamp uint256, merkleRoot bytes32, epoch uint256)
+func (_FilecoinService *FilecoinServiceTransactor) State(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _FilecoinService.contract.Transact(opts, "state")
+}
+
+// State is a paid mutator transaction binding the contract method 0xc19d93fb.
+//
+// Solidity: function state() returns(updatedAtTimestamp uint256, merkleRoot bytes32, epoch uint256)
+func (_FilecoinService *FilecoinServiceSession) State() (*types.Transaction, error) {
+	return _FilecoinService.Contract.State(&_FilecoinService.TransactOpts)
+}
+
+// State is a paid mutator transaction binding the contract method 0xc19d93fb.
+//
+// Solidity: function state() returns(updatedAtTimestamp uint256, merkleRoot bytes32, epoch uint256)
+func (_FilecoinService *FilecoinServiceTransactorSession) State() (*types.Transaction, error) {
+	return _FilecoinService.Contract.State(&_FilecoinService.TransactOpts)
+}
+
 // SubmitProof is a paid mutator transaction binding the contract method 0x01930e36.
 //
-// Solidity: function submitProof(string dataCid, string pieceCid, uint256 dealId, string provider, uint256 startEpoch, uint256 endEpoch, uint256 signedEpoch, bytes32[] merkleProof) returns()
+// Solidity: function submitProof(dataCid string, pieceCid string, dealId uint256, provider string, startEpoch uint256, endEpoch uint256, signedEpoch uint256, merkleProof bytes32[]) returns()
 func (_FilecoinService *FilecoinServiceTransactor) SubmitProof(opts *bind.TransactOpts, dataCid string, pieceCid string, dealId *big.Int, provider string, startEpoch *big.Int, endEpoch *big.Int, signedEpoch *big.Int, merkleProof [][32]byte) (*types.Transaction, error) {
 	return _FilecoinService.contract.Transact(opts, "submitProof", dataCid, pieceCid, dealId, provider, startEpoch, endEpoch, signedEpoch, merkleProof)
 }
 
 // SubmitProof is a paid mutator transaction binding the contract method 0x01930e36.
 //
-// Solidity: function submitProof(string dataCid, string pieceCid, uint256 dealId, string provider, uint256 startEpoch, uint256 endEpoch, uint256 signedEpoch, bytes32[] merkleProof) returns()
+// Solidity: function submitProof(dataCid string, pieceCid string, dealId uint256, provider string, startEpoch uint256, endEpoch uint256, signedEpoch uint256, merkleProof bytes32[]) returns()
 func (_FilecoinService *FilecoinServiceSession) SubmitProof(dataCid string, pieceCid string, dealId *big.Int, provider string, startEpoch *big.Int, endEpoch *big.Int, signedEpoch *big.Int, merkleProof [][32]byte) (*types.Transaction, error) {
 	return _FilecoinService.Contract.SubmitProof(&_FilecoinService.TransactOpts, dataCid, pieceCid, dealId, provider, startEpoch, endEpoch, signedEpoch, merkleProof)
 }
 
 // SubmitProof is a paid mutator transaction binding the contract method 0x01930e36.
 //
-// Solidity: function submitProof(string dataCid, string pieceCid, uint256 dealId, string provider, uint256 startEpoch, uint256 endEpoch, uint256 signedEpoch, bytes32[] merkleProof) returns()
+// Solidity: function submitProof(dataCid string, pieceCid string, dealId uint256, provider string, startEpoch uint256, endEpoch uint256, signedEpoch uint256, merkleProof bytes32[]) returns()
 func (_FilecoinService *FilecoinServiceTransactorSession) SubmitProof(dataCid string, pieceCid string, dealId *big.Int, provider string, startEpoch *big.Int, endEpoch *big.Int, signedEpoch *big.Int, merkleProof [][32]byte) (*types.Transaction, error) {
 	return _FilecoinService.Contract.SubmitProof(&_FilecoinService.TransactOpts, dataCid, pieceCid, dealId, provider, startEpoch, endEpoch, signedEpoch, merkleProof)
 }
 
 // UpdateState is a paid mutator transaction binding the contract method 0x4c139b55.
 //
-// Solidity: function updateState(bytes32 _merkleRoot, uint256 _epoch) returns()
+// Solidity: function updateState(_merkleRoot bytes32, _epoch uint256) returns()
 func (_FilecoinService *FilecoinServiceTransactor) UpdateState(opts *bind.TransactOpts, _merkleRoot [32]byte, _epoch *big.Int) (*types.Transaction, error) {
 	return _FilecoinService.contract.Transact(opts, "updateState", _merkleRoot, _epoch)
 }
 
 // UpdateState is a paid mutator transaction binding the contract method 0x4c139b55.
 //
-// Solidity: function updateState(bytes32 _merkleRoot, uint256 _epoch) returns()
+// Solidity: function updateState(_merkleRoot bytes32, _epoch uint256) returns()
 func (_FilecoinService *FilecoinServiceSession) UpdateState(_merkleRoot [32]byte, _epoch *big.Int) (*types.Transaction, error) {
 	return _FilecoinService.Contract.UpdateState(&_FilecoinService.TransactOpts, _merkleRoot, _epoch)
 }
 
 // UpdateState is a paid mutator transaction binding the contract method 0x4c139b55.
 //
-// Solidity: function updateState(bytes32 _merkleRoot, uint256 _epoch) returns()
+// Solidity: function updateState(_merkleRoot bytes32, _epoch uint256) returns()
 func (_FilecoinService *FilecoinServiceTransactorSession) UpdateState(_merkleRoot [32]byte, _epoch *big.Int) (*types.Transaction, error) {
 	return _FilecoinService.Contract.UpdateState(&_FilecoinService.TransactOpts, _merkleRoot, _epoch)
+}
+
+// VerifyProof is a paid mutator transaction binding the contract method 0x8d834449.
+//
+// Solidity: function verifyProof(dataCid string, pieceCid string, dealId uint256, provider string, startEpoch uint256, endEpoch uint256, signedEpoch uint256, merkleProof bytes32[]) returns(bool)
+func (_FilecoinService *FilecoinServiceTransactor) VerifyProof(opts *bind.TransactOpts, dataCid string, pieceCid string, dealId *big.Int, provider string, startEpoch *big.Int, endEpoch *big.Int, signedEpoch *big.Int, merkleProof [][32]byte) (*types.Transaction, error) {
+	return _FilecoinService.contract.Transact(opts, "verifyProof", dataCid, pieceCid, dealId, provider, startEpoch, endEpoch, signedEpoch, merkleProof)
+}
+
+// VerifyProof is a paid mutator transaction binding the contract method 0x8d834449.
+//
+// Solidity: function verifyProof(dataCid string, pieceCid string, dealId uint256, provider string, startEpoch uint256, endEpoch uint256, signedEpoch uint256, merkleProof bytes32[]) returns(bool)
+func (_FilecoinService *FilecoinServiceSession) VerifyProof(dataCid string, pieceCid string, dealId *big.Int, provider string, startEpoch *big.Int, endEpoch *big.Int, signedEpoch *big.Int, merkleProof [][32]byte) (*types.Transaction, error) {
+	return _FilecoinService.Contract.VerifyProof(&_FilecoinService.TransactOpts, dataCid, pieceCid, dealId, provider, startEpoch, endEpoch, signedEpoch, merkleProof)
+}
+
+// VerifyProof is a paid mutator transaction binding the contract method 0x8d834449.
+//
+// Solidity: function verifyProof(dataCid string, pieceCid string, dealId uint256, provider string, startEpoch uint256, endEpoch uint256, signedEpoch uint256, merkleProof bytes32[]) returns(bool)
+func (_FilecoinService *FilecoinServiceTransactorSession) VerifyProof(dataCid string, pieceCid string, dealId *big.Int, provider string, startEpoch *big.Int, endEpoch *big.Int, signedEpoch *big.Int, merkleProof [][32]byte) (*types.Transaction, error) {
+	return _FilecoinService.Contract.VerifyProof(&_FilecoinService.TransactOpts, dataCid, pieceCid, dealId, provider, startEpoch, endEpoch, signedEpoch, merkleProof)
 }
 
 // FilecoinServiceStoredCidIterator is returned from FilterStoredCid and is used to iterate over the raw logs and unpacked data for StoredCid events raised by the FilecoinService contract.
@@ -507,7 +442,7 @@ type FilecoinServiceStoredCid struct {
 
 // FilterStoredCid is a free log retrieval operation binding the contract event 0xbd510a4e8d7985f3ff7bd53f296135db76010e4f86e77264c9896d3aa3d055e8.
 //
-// Solidity: event StoredCid(string dataCid, string pieceCid, uint256 dealId, string provider, uint256 startEpoch, uint256 endEpoch, uint256 signedEpoch)
+// Solidity: e StoredCid(dataCid string, pieceCid string, dealId uint256, provider string, startEpoch uint256, endEpoch uint256, signedEpoch uint256)
 func (_FilecoinService *FilecoinServiceFilterer) FilterStoredCid(opts *bind.FilterOpts) (*FilecoinServiceStoredCidIterator, error) {
 
 	logs, sub, err := _FilecoinService.contract.FilterLogs(opts, "StoredCid")
@@ -519,7 +454,7 @@ func (_FilecoinService *FilecoinServiceFilterer) FilterStoredCid(opts *bind.Filt
 
 // WatchStoredCid is a free log subscription operation binding the contract event 0xbd510a4e8d7985f3ff7bd53f296135db76010e4f86e77264c9896d3aa3d055e8.
 //
-// Solidity: event StoredCid(string dataCid, string pieceCid, uint256 dealId, string provider, uint256 startEpoch, uint256 endEpoch, uint256 signedEpoch)
+// Solidity: e StoredCid(dataCid string, pieceCid string, dealId uint256, provider string, startEpoch uint256, endEpoch uint256, signedEpoch uint256)
 func (_FilecoinService *FilecoinServiceFilterer) WatchStoredCid(opts *bind.WatchOpts, sink chan<- *FilecoinServiceStoredCid) (event.Subscription, error) {
 
 	logs, sub, err := _FilecoinService.contract.WatchLogs(opts, "StoredCid")
@@ -552,16 +487,4 @@ func (_FilecoinService *FilecoinServiceFilterer) WatchStoredCid(opts *bind.Watch
 			}
 		}
 	}), nil
-}
-
-// ParseStoredCid is a log parse operation binding the contract event 0xbd510a4e8d7985f3ff7bd53f296135db76010e4f86e77264c9896d3aa3d055e8.
-//
-// Solidity: event StoredCid(string dataCid, string pieceCid, uint256 dealId, string provider, uint256 startEpoch, uint256 endEpoch, uint256 signedEpoch)
-func (_FilecoinService *FilecoinServiceFilterer) ParseStoredCid(log types.Log) (*FilecoinServiceStoredCid, error) {
-	event := new(FilecoinServiceStoredCid)
-	if err := _FilecoinService.contract.UnpackLog(event, "StoredCid", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
 }
