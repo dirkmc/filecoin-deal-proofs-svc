@@ -14,7 +14,7 @@ import (
 
 var (
 	endpoint = "https://rinkeby.infura.io/v3/7e1eddb52ae149eaaa92941def0fd49d"
-	contract = common.HexToAddress("0x00000")
+	contract = common.HexToAddress("0xd4375467f6CfB0493b5e4AF0601B3a0f2e7D2FcA")
 
 	managerAddress = common.HexToAddress("0x3b8Fd7cE0f4841F1C23B67b20676886ac230Be64")
 	privateKey     = "f0ce4b609fe0865dd37595908c2c01e5e8ca887983f6db638f5ffe5b3067887c"
@@ -38,12 +38,13 @@ func publishMerkleRootToEthereum() {
 	}
 
 	signFn := func(s types.Signer, addr common.Address, tx *types.Transaction) (*types.Transaction, error) {
-		return types.SignTx(tx, types.NewEIP155Signer(big.NewInt(1)), pk)
+		rinkeby := big.NewInt(4)
+		return types.SignTx(tx, types.NewEIP155Signer(rinkeby), pk)
 	}
 
 	opts := &bind.TransactOpts{
 		From:     managerAddress,
-		GasPrice: big.NewInt(2000000000), // 2 gwei
+		GasPrice: big.NewInt(5000000000), // 5 gwei
 		Signer:   signFn,
 		Nonce:    nil,
 		Value:    nil,
@@ -59,6 +60,9 @@ func publishMerkleRootToEthereum() {
 	copy(mr[:], common.HexToAddress(db.MerkleRoot).Bytes())
 
 	tx, err := fo.UpdateState(opts, mr, signedEpoch)
+	if err != nil {
+		panic(err)
+	}
 
 	log.Debugw("sent tx", "txhash", tx.Hash())
 }
