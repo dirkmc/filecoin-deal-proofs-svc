@@ -39,22 +39,22 @@ type Deal struct {
 }
 
 func (db *liteDB) DealByID(dealID uint64) (*Deal, error) {
-	//return &Deal{
-	//	DealID:      dealID,
-	//	DataCID:     "datacid1234",
-	//	PieceCID:    "piececid1234",
-	//	Provider:    "fprovider1",
-	//	StartEpoch:  10,
-	//	EndEpoch:    2000,
-	//	SignedEpoch: 50,
-	//}, nil
+	return &Deal{
+		DealID:      dealID,
+		DataCID:     "datacid1234",
+		PieceCID:    "piececid1234",
+		Provider:    "fprovider1",
+		StartEpoch:  10,
+		EndEpoch:    2000,
+		SignedEpoch: 50,
+	}, nil
 
-	statement, err := db.conn.Prepare("SELECT * FROM deals WHERE DealID = ?")
-	if err != nil {
-		return nil, err
-	}
-
-	return RowToDeal(statement.QueryRow(dealID))
+	//statement, err := db.conn.Prepare("SELECT * FROM deals WHERE DealID = ?")
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//return RowToDeal(statement.QueryRow(dealID))
 }
 
 type Scannable interface {

@@ -26,13 +26,6 @@ func run() error {
 	ctx, cancel := context.WithCancel(ProcessContext())
 	defer cancel()
 
-	//cfg := &config.EnvConfig{}
-	//if err := cfg.Load(); err != nil {
-	//	return err
-	//}
-	//
-	//srv, err := daemon.New(cfg)
-
 	apidb, err := db.New()
 	if err != nil {
 		return err
