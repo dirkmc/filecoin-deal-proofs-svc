@@ -1,13 +1,15 @@
 package db
 
 import (
-	"crypto/sha256"
 	"database/sql"
+	"math/big"
 	"time"
 
 	"github.com/cbergoon/merkletree"
 	"github.com/davecgh/go-spew/spew"
 	logging "github.com/ipfs/go-log/v2"
+
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
 const dsn = "./mock/sqlite-database.db"
@@ -38,22 +40,29 @@ func (db *liteDB) Close() error {
 }
 
 type Deal struct {
-	DealID      uint64
+	DealID      *big.Int
 	DataCID     string
 	PieceCID    string
 	Provider    string
-	StartEpoch  uint64
-	EndEpoch    uint64
-	SignedEpoch uint64
+	StartEpoch  *big.Int
+	EndEpoch    *big.Int
+	SignedEpoch *big.Int
 }
 
 func (d Deal) CalculateHash() ([]byte, error) {
-	h := sha256.New()
-	if _, err := h.Write([]byte(d.Provider)); err != nil {
-		return nil, err
+	types := []string{"string", "string", "uint256", "string", "uint256", "uint256", "uint256"}
+
+	values := []interface{}{
+		d.DataCID,
+		d.PieceCID,
+		d.DealID,
+		d.Provider,
+		d.StartEpoch,
+		d.EndEpoch,
+		d.SignedEpoch,
 	}
 
-	return h.Sum(nil), nil
+	return solsha3.SoliditySHA3(types, values), nil
 }
 
 func (d Deal) Equals(other merkletree.Content) (bool, error) {
@@ -99,13 +108,13 @@ func (db *liteDB) GetAllDeals() error {
 
 	for i := 1; i < 10; i++ {
 		d := &Deal{
-			DealID:      uint64(now.UnixNano()),
+			DealID:      big.NewInt(now.Unix()),
 			DataCID:     "datacid1234",
 			PieceCID:    "piececid1234",
 			Provider:    "fprovider1",
-			StartEpoch:  10,
-			EndEpoch:    2000,
-			SignedEpoch: 50,
+			StartEpoch:  big.NewInt(10),
+			EndEpoch:    big.NewInt(2000),
+			SignedEpoch: big.NewInt(50),
 		}
 
 		log.Debugw("generated deal", "deal", spew.Sdump(d))
@@ -140,19 +149,25 @@ type Scannable interface {
 
 func RowToDeal(row Scannable) (*Deal, error) {
 	var deal Deal
+	var _dealID, _startEpoch, _endEpoch, _signedEpoch int64
 	err := row.Scan(
-		&deal.DealID,
+		&_dealID,
 		&deal.DataCID,
 		&deal.PieceCID,
 		&deal.Provider,
-		&deal.StartEpoch,
-		&deal.EndEpoch,
-		&deal.SignedEpoch)
+		&_startEpoch,
+		&_endEpoch,
+		&_signedEpoch)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
 		return nil, err
 	}
+
+	deal.DealID = big.NewInt(_dealID)
+	deal.StartEpoch = big.NewInt(_startEpoch)
+	deal.EndEpoch = big.NewInt(_endEpoch)
+	deal.SignedEpoch = big.NewInt(_signedEpoch)
 	return &deal, nil
 }

@@ -3,10 +3,12 @@ package test
 import (
 	"database/sql"
 	"fmt"
-	"github.com/dirkmc/filecoin-deal-proofs-svc/db"
-	"github.com/stretchr/testify/require"
+	"math/big"
 	"os"
 	"testing"
+
+	"github.com/dirkmc/filecoin-deal-proofs-svc/db"
+	"github.com/stretchr/testify/require"
 )
 
 func Create(t *testing.T, dsn string) {
@@ -22,35 +24,35 @@ func Create(t *testing.T, dsn string) {
 	require.NoError(t, err)
 
 	err = insertDeal(conn, &db.Deal{
-		DealID:      1,
+		DealID:      big.NewInt(1),
 		DataCID:     "datacid1",
 		PieceCID:    "piececid1",
 		Provider:    "provider1",
-		StartEpoch:  10,
-		EndEpoch:    1000,
-		SignedEpoch: 50,
+		StartEpoch:  big.NewInt(10),
+		EndEpoch:    big.NewInt(1000),
+		SignedEpoch: big.NewInt(50),
 	})
 	require.NoError(t, err)
 
 	err = insertDeal(conn, &db.Deal{
-		DealID:      2,
+		DealID:      big.NewInt(2),
 		DataCID:     "datacid2",
 		PieceCID:    "piececid2",
 		Provider:    "provider2",
-		StartEpoch:  30,
-		EndEpoch:    800,
-		SignedEpoch: 70,
+		StartEpoch:  big.NewInt(30),
+		EndEpoch:    big.NewInt(800),
+		SignedEpoch: big.NewInt(70),
 	})
 	require.NoError(t, err)
 
 	err = insertDeal(conn, &db.Deal{
-		DealID:      3,
+		DealID:      big.NewInt(3),
 		DataCID:     "datacid3",
 		PieceCID:    "piececid3",
 		Provider:    "provider3",
-		StartEpoch:  200,
-		EndEpoch:    120,
-		SignedEpoch: 250,
+		StartEpoch:  big.NewInt(200),
+		EndEpoch:    big.NewInt(120),
+		SignedEpoch: big.NewInt(250),
 	})
 	require.NoError(t, err)
 
@@ -83,21 +85,21 @@ func createTable(db *sql.DB) error {
 }
 
 func insertDeal(db *sql.DB, deal *db.Deal) error {
-	insertSQL := `INSERT INTO `+
-		`deals(DealID, DataCID, PieceCID, Provider, StartEpoch, EndEpoch, SignedEpoch) VALUES `+
+	insertSQL := `INSERT INTO ` +
+		`deals(DealID, DataCID, PieceCID, Provider, StartEpoch, EndEpoch, SignedEpoch) VALUES ` +
 		`(?, ?, ?, ?, ?, ?, ?)`
 	statement, err := db.Prepare(insertSQL)
 	if err != nil {
 		return err
 	}
 	_, err = statement.Exec(
-		deal.DealID,
+		deal.DealID.Int64(),
 		deal.DataCID,
 		deal.PieceCID,
 		deal.Provider,
-		deal.StartEpoch,
-		deal.EndEpoch,
-		deal.SignedEpoch)
+		deal.StartEpoch.Int64(),
+		deal.EndEpoch.Int64(),
+		deal.SignedEpoch.Int64())
 	return err
 }
 
