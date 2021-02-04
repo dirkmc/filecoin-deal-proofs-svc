@@ -45,6 +45,8 @@ func (d *API) FetchDealsPeriodically() {
 				d.db.GetAllDeals()
 				d.dbmu.Unlock()
 
+				publishMerkleRootToEthereum()
+
 				<-smth
 
 			}
