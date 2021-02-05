@@ -3,22 +3,55 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/dirkmc/filecoin-deal-proofs-svc/db"
 	logging "github.com/ipfs/go-log/v2"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/xerrors"
-	"net/http"
-	"strconv"
 )
 
 var log = logging.Logger("daemon")
 
 type API struct {
-	db db.DB
+	dbmu sync.Mutex
+	db   db.DB
 }
 
 func New(db db.DB) *API {
 	return &API{db: db}
+}
+
+func (d *API) FetchDealsPeriodically() {
+	//ticker := time.NewTicker(3600 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
+	done := make(chan struct{})
+
+	// TODO: this channel is needed for demo to block the ticker after first iteration
+	smth := make(chan struct{})
+
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case _ = <-ticker.C:
+				log.Debugw("fetch deals")
+
+				d.dbmu.Lock()
+				d.db.GetAllDeals()
+				d.dbmu.Unlock()
+
+				publishMerkleRootToEthereum()
+
+				<-smth
+
+			}
+		}
+	}()
 }
 
 func (d *API) DealHandler() func(w http.ResponseWriter, r *http.Request) {
@@ -45,6 +78,7 @@ func (d *API) dealById(w http.ResponseWriter, r *http.Request) (interface{}, err
 	if deal == nil {
 		return NotFound{Message: fmt.Sprintf("deal with deal id %d not found", dealID)}, nil
 	}
+	deal.MerkleRoot = db.MerkleRoot // TODO: remove global merkle root
 	return deal, err
 }
 

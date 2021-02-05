@@ -2,19 +2,27 @@ package main
 
 import (
 	"context"
+	"flag"
+	"net/http"
+	"time"
+
 	"github.com/dirkmc/filecoin-deal-proofs-svc/db"
 	"github.com/dirkmc/filecoin-deal-proofs-svc/web"
 	logging "github.com/ipfs/go-log/v2"
-	"net/http"
-	"time"
 
 	"github.com/dirkmc/filecoin-deal-proofs-svc/api"
 )
 
 var log = logging.Logger("svc")
 
+var production = flag.Bool("production", false, "run in prod, and send tx to ethereum rinkeby")
+
 func main() {
 	logging.SetAllLoggers(logging.LevelDebug)
+
+	flag.Parse()
+
+	api.Production = *production
 
 	err := run()
 	if err != nil {
@@ -31,7 +39,10 @@ func run() error {
 		return err
 	}
 
-	srv, err := web.New(api.New(apidb))
+	a := api.New(apidb)
+	a.FetchDealsPeriodically()
+
+	srv, err := web.New(a)
 	if err != nil {
 		return err
 	}
