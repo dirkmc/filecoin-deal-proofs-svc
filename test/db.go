@@ -31,6 +31,7 @@ func Create(t *testing.T, dsn string) {
 		StartEpoch:  big.NewInt(10),
 		EndEpoch:    big.NewInt(1000),
 		SignedEpoch: big.NewInt(50),
+		Proof:       "",
 	})
 	require.NoError(t, err)
 
@@ -42,6 +43,7 @@ func Create(t *testing.T, dsn string) {
 		StartEpoch:  big.NewInt(30),
 		EndEpoch:    big.NewInt(800),
 		SignedEpoch: big.NewInt(70),
+		Proof:       "",
 	})
 	require.NoError(t, err)
 
@@ -53,6 +55,7 @@ func Create(t *testing.T, dsn string) {
 		StartEpoch:  big.NewInt(200),
 		EndEpoch:    big.NewInt(120),
 		SignedEpoch: big.NewInt(250),
+		Proof:       "",
 	})
 	require.NoError(t, err)
 
@@ -87,8 +90,8 @@ func createTable(db *sql.DB) error {
 
 func insertDeal(db *sql.DB, deal *db.Deal) error {
 	insertSQL := `INSERT INTO ` +
-		`deals(DealID, DataCID, PieceCID, Provider, StartEpoch, EndEpoch, SignedEpoch) VALUES ` +
-		`(?, ?, ?, ?, ?, ?, ?)`
+		`deals(DealID, DataCID, PieceCID, Provider, StartEpoch, EndEpoch, SignedEpoch, Proof) VALUES ` +
+		`(?, ?, ?, ?, ?, ?, ?, ?)`
 	statement, err := db.Prepare(insertSQL)
 	if err != nil {
 		return err
@@ -100,7 +103,8 @@ func insertDeal(db *sql.DB, deal *db.Deal) error {
 		deal.Provider,
 		deal.StartEpoch.Int64(),
 		deal.EndEpoch.Int64(),
-		deal.SignedEpoch.Int64())
+		deal.SignedEpoch.Int64(),
+		deal.Proof)
 	return err
 }
 
