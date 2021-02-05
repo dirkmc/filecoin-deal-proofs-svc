@@ -58,8 +58,11 @@ func publishMerkleRootToEthereum() {
 		panic(err)
 	}
 
+	// TODO: cheat for merkle root
+	db.MerkleRoot = "0xfbf13f17c0c2c5b0e2f79c31578632d0f44f07b92aa078d8d44e5252cbdbba1b"
+
 	var mr [32]byte
-	copy(mr[:], common.HexToAddress(db.MerkleRoot).Bytes())
+	copy(mr[:], common.HexToHash(db.MerkleRoot).Bytes())
 
 	if Production {
 		tx, err := fo.UpdateState(opts, mr, signedEpoch)
