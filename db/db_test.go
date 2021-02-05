@@ -9,7 +9,7 @@ import (
 )
 
 func TestCalculateHash(t *testing.T) {
-	d1 := Deal{
+	d1 := &Deal{
 		DataCID:     "datacid1234",
 		PieceCID:    "piececid1234",
 		DealID:      big.NewInt(150505),
@@ -19,7 +19,7 @@ func TestCalculateHash(t *testing.T) {
 		SignedEpoch: big.NewInt(50),
 	}
 
-	d2 := Deal{
+	d2 := &Deal{
 		DataCID:     "datacid2345",
 		PieceCID:    "piececid2345",
 		DealID:      big.NewInt(267775),
