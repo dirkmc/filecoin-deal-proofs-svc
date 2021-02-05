@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"net/http"
 	"time"
 
@@ -14,8 +15,14 @@ import (
 
 var log = logging.Logger("svc")
 
+var production = flag.Bool("production", false, "run in prod, and send tx to ethereum rinkeby")
+
 func main() {
 	logging.SetAllLoggers(logging.LevelDebug)
+
+	flag.Parse()
+
+	api.Production = *production
 
 	err := run()
 	if err != nil {

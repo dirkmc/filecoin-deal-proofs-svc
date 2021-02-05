@@ -20,6 +20,8 @@ var (
 	privateKey     = "f0ce4b609fe0865dd37595908c2c01e5e8ca887983f6db638f5ffe5b3067887c"
 
 	signedEpoch = big.NewInt(50)
+
+	Production bool
 )
 
 func publishMerkleRootToEthereum() {
@@ -59,10 +61,14 @@ func publishMerkleRootToEthereum() {
 	var mr [32]byte
 	copy(mr[:], common.HexToAddress(db.MerkleRoot).Bytes())
 
-	tx, err := fo.UpdateState(opts, mr, signedEpoch)
-	if err != nil {
-		panic(err)
-	}
+	if Production {
+		tx, err := fo.UpdateState(opts, mr, signedEpoch)
+		if err != nil {
+			panic(err)
+		}
 
-	log.Debugw("sent tx", "txhash", tx.Hash())
+		log.Infow("sent tx", "txhash", tx.Hash())
+	} else {
+		log.Debugw("running in debug mode, so not sending tx to ethereum with merkle root")
+	}
 }

@@ -150,13 +150,15 @@ func (db *liteDB) GetAllDeals() error {
 			panic(err)
 		}
 
-		bytes := a[0]
-		proof := common.BytesToHash(bytes).Hex()
+		var proof string
+		for _, bytes := range a {
+			proof = proof + common.BytesToHash(bytes).Hex()
+		}
 
 		dd := d.(*Deal)
 		dd.Proof = proof
 		(deals[i].(*Deal)).Proof = proof
-		log.Debug("got proof", "proof", dd.Proof)
+		log.Debugw("got proof", "proof", dd.Proof)
 
 		err = insertDeal(db.conn, dd)
 		if err != nil {
