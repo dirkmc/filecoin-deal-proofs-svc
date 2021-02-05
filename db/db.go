@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"fmt"
 	"math/big"
 	"time"
 
@@ -47,7 +48,7 @@ func New(remoteDSN string) (DB, error) {
 }
 
 func (db *dbImpl) Close() error {
-	return db.Close()
+	return db.conn.Close()
 }
 
 type Deal struct {
@@ -97,12 +98,15 @@ func (db *dbImpl) GetAllDeals() error {
 		return err
 	}
 
+	dealCount := 10
+	log.Debugf("fetching up to %d deals", dealCount)
 	//deals := mockDeals()
-	deals, err := db.fetchRemoteDeals()
+	deals, err := db.fetchRemoteDeals(dealCount)
 	if err != nil {
 		return err
 	}
 
+	merkleStart := time.Now()
 	tree, err := merkletree.NewTree(deals)
 	if err != nil {
 		return err
@@ -110,8 +114,10 @@ func (db *dbImpl) GetAllDeals() error {
 
 	mr := tree.MerkleRoot()
 	MerkleRoot = common.BytesToHash(mr).Hex()
+	log.Debugf("built merkle tree in %s", time.Since(merkleStart))
 	log.Debugw("merkle root", "root", MerkleRoot)
 
+	insertStart := time.Now()
 	for i, d := range deals {
 		a, _, err := tree.GetMerklePath(d)
 		if err != nil {
@@ -126,7 +132,7 @@ func (db *dbImpl) GetAllDeals() error {
 		dd := d.(*Deal)
 		dd.Proof = proof
 		(deals[i].(*Deal)).Proof = proof
-		log.Debugw("got proof", "proof", dd.Proof)
+		//log.Debugw("got proof", "proof", dd.Proof)
 		//log.Debugw("deal with proof", "deal", spew.Sdump(dd))
 
 		err = db.insertDeal(dd)
@@ -134,6 +140,7 @@ func (db *dbImpl) GetAllDeals() error {
 			return err
 		}
 	}
+	log.Debugf("inserted deals in %s", time.Since(insertStart))
 
 	return nil
 }
@@ -177,18 +184,20 @@ func (db *dbImpl) createDealsTable() error {
 	return nil
 }
 
-func (db *dbImpl) fetchRemoteDeals() ([]merkletree.Content, error) {
-	log.Debugw("fetch `deals` data from remote")
-	defer log.Debugw("`deals` data fetched from remote")
-
+func (db *dbImpl) fetchRemoteDeals(dealCount int) ([]merkletree.Content, error) {
 	remoteConn, err := pgx.Connect(db.ctx, db.remoteDSN)
 	if err != nil {
 		return nil, err
 	}
 
-	fetchDealsDataSQL := `SELECT DISTINCT
+	start := time.Now()
+	defer func() {
+		log.Debugf("fetched deals in %s", time.Since(start))
+	}()
+
+	fetchDealsDataSQL := fmt.Sprintf(`SELECT DISTINCT
 		deal_id, label, piece_cid, provider_id, start_epoch, end_epoch
-		FROM market_deal_proposals limit 10`
+		FROM market_deal_proposals limit %d`, dealCount)
 	rows, err := remoteConn.Query(db.ctx, fetchDealsDataSQL)
 	if err != nil {
 		return nil, err
@@ -203,7 +212,10 @@ func (db *dbImpl) fetchRemoteDeals() ([]merkletree.Content, error) {
 		var provider string
 		var startEpoch int64
 		var endEpoch int64
-		rows.Scan(&dealID, &label, &pieceCID, &provider, &startEpoch, &endEpoch)
+		err = rows.Scan(&dealID, &label, &pieceCID, &provider, &startEpoch, &endEpoch)
+		if err != nil {
+			return nil, err
+		}
 		//fmt.Printf("%d %s %s %s %d %d\n", dealID, label, pieceCID, provider, start_epoch, end_epoch)
 
 		d := &Deal{
