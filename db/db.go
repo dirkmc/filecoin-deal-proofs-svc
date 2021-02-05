@@ -30,7 +30,7 @@ type DB interface {
 	Close() error
 }
 
-type liteDB struct {
+type dbImpl struct {
 	ctx       context.Context
 	conn      *sql.DB
 	remoteDSN string
@@ -43,10 +43,10 @@ func New(remoteDSN string) (DB, error) {
 	}
 
 	ctx := context.Background()
-	return &liteDB{ctx: ctx, conn: conn, remoteDSN: remoteDSN}, nil
+	return &dbImpl{ctx: ctx, conn: conn, remoteDSN: remoteDSN}, nil
 }
 
-func (db *liteDB) Close() error {
+func (db *dbImpl) Close() error {
 	return db.Close()
 }
 
@@ -91,7 +91,7 @@ func (ds Deals) Root() string {
 	return "0x1234"
 }
 
-func (db *liteDB) GetAllDeals() error {
+func (db *dbImpl) GetAllDeals() error {
 	err := db.createDealsTable()
 	if err != nil {
 		return err
@@ -138,7 +138,7 @@ func (db *liteDB) GetAllDeals() error {
 	return nil
 }
 
-func (db *liteDB) createDealsTable() error {
+func (db *dbImpl) createDealsTable() error {
 	// drop all deals from db
 
 	log.Debugw("dropping deals db")
@@ -177,7 +177,7 @@ func (db *liteDB) createDealsTable() error {
 	return nil
 }
 
-func (db *liteDB) fetchRemoteDeals() ([]merkletree.Content, error) {
+func (db *dbImpl) fetchRemoteDeals() ([]merkletree.Content, error) {
 	log.Debugw("fetch `deals` data from remote")
 	defer log.Debugw("`deals` data fetched from remote")
 
@@ -225,7 +225,7 @@ func (db *liteDB) fetchRemoteDeals() ([]merkletree.Content, error) {
 	return deals, nil
 }
 
-func (db *liteDB) DealByID(dealID uint64) (*Deal, error) {
+func (db *dbImpl) DealByID(dealID uint64) (*Deal, error) {
 	statement, err := db.conn.Prepare("SELECT * FROM deals WHERE DealID = ?")
 	if err != nil {
 		return nil, err
@@ -234,7 +234,7 @@ func (db *liteDB) DealByID(dealID uint64) (*Deal, error) {
 	return RowToDeal(statement.QueryRow(dealID))
 }
 
-func (db *liteDB) insertDeal(deal *Deal) error {
+func (db *dbImpl) insertDeal(deal *Deal) error {
 	insertSQL := `INSERT INTO ` +
 		`deals(DealID, DataCID, PieceCID, Provider, StartEpoch, EndEpoch, SignedEpoch, Proof) VALUES ` +
 		`(?, ?, ?, ?, ?, ?, ?, ?)`
