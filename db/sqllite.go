@@ -2,19 +2,24 @@ package db
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"math/big"
 	"time"
 
-	"github.com/cbergoon/merkletree"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/jackc/pgx/v4"
+
+	"github.com/cbergoon/merkletree"
 	"github.com/ethereum/go-ethereum/common"
 	logging "github.com/ipfs/go-log/v2"
+	_ "github.com/jackc/pgx/v4"
+	_ "github.com/mattn/go-sqlite3"
 
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
-const dsn = "./mock/sqlite-database.db"
+const localDSN = "./mock/sqlite-database.db"
 
 var log = logging.Logger("db")
 var MerkleRoot string
@@ -26,16 +31,19 @@ type DB interface {
 }
 
 type liteDB struct {
-	conn *sql.DB
+	ctx       context.Context
+	conn      *sql.DB
+	remoteDSN string
 }
 
-func New() (DB, error) {
-	conn, err := sql.Open("sqlite3", dsn)
+func New(remoteDSN string) (DB, error) {
+	conn, err := sql.Open("sqlite3", localDSN)
 	if err != nil {
 		return nil, err
 	}
 
-	return &liteDB{conn: conn}, nil
+	ctx := context.Background()
+	return &liteDB{ctx: ctx, conn: conn, remoteDSN: remoteDSN}, nil
 }
 
 func (db *liteDB) Close() error {
@@ -84,11 +92,64 @@ func (ds Deals) Root() string {
 }
 
 func (db *liteDB) GetAllDeals() error {
+	err := db.createDealsTable()
+	if err != nil {
+		return err
+	}
+
+	//deals := mockDeals()
+	deals, err := db.fetchRemoteDeals()
+	if err != nil {
+		return err
+	}
+
+	tree, err := merkletree.NewTree(deals)
+	if err != nil {
+		return err
+	}
+
+	mr := tree.MerkleRoot()
+	MerkleRoot = common.BytesToHash(mr).Hex()
+	log.Debugw("merkle root", "root", MerkleRoot)
+
+	for i, d := range deals {
+		a, _, err := tree.GetMerklePath(d)
+		if err != nil {
+			return err
+		}
+
+		var proof string
+		for _, bytes := range a {
+			proof = proof + common.BytesToHash(bytes).Hex()
+		}
+
+		dd := d.(*Deal)
+		dd.Proof = proof
+		(deals[i].(*Deal)).Proof = proof
+		log.Debugw("got proof", "proof", dd.Proof)
+		//log.Debugw("deal with proof", "deal", spew.Sdump(dd))
+
+		err = db.insertDeal(dd)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (db *liteDB) createDealsTable() error {
 	// drop all deals from db
 
 	log.Debugw("dropping deals db")
-	statement, _ := db.conn.Prepare(`DROP TABLE deals`)
-	statement.Exec()
+	statement, err := db.conn.Prepare(`DROP TABLE deals`)
+	if err != nil {
+		return err
+	}
+	_, err = statement.Exec()
+	if err != nil {
+		return err
+	}
 
 	// create db based on data from sentinel
 
@@ -104,70 +165,64 @@ func (db *liteDB) GetAllDeals() error {
 	  );`
 
 	log.Debugw("create `deals` table")
-	statement, err := db.conn.Prepare(createDb)
+	statement, err = db.conn.Prepare(createDb)
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
-	statement.Exec()
+	_, err = statement.Exec()
+	if err != nil {
+		return err
+	}
 	log.Debugw("`deals` table created")
+	return nil
+}
 
-	//now := time.Now()
+func (db *liteDB) fetchRemoteDeals() ([]merkletree.Content, error) {
+	log.Debugw("fetch `deals` data from remote")
+	defer log.Debugw("`deals` data fetched from remote")
 
-	// make deal ids deterministic
-	shortForm := "2006-Jan-02"
-	now, _ := time.Parse(shortForm, "2021-Feb-05")
+	remoteConn, err := pgx.Connect(db.ctx, db.remoteDSN)
+	if err != nil {
+		return nil, err
+	}
+
+	fetchDealsDataSQL := `SELECT DISTINCT
+		deal_id, label, piece_cid, provider_id, start_epoch, end_epoch
+		FROM market_deal_proposals limit 10`
+	rows, err := remoteConn.Query(db.ctx, fetchDealsDataSQL)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
 	var deals []merkletree.Content
+	for rows.Next() {
+		var dealID int64
+		var label string
+		var pieceCID string
+		var provider string
+		var startEpoch int64
+		var endEpoch int64
+		rows.Scan(&dealID, &label, &pieceCID, &provider, &startEpoch, &endEpoch)
+		//fmt.Printf("%d %s %s %s %d %d\n", dealID, label, pieceCID, provider, start_epoch, end_epoch)
 
-	for i := 1; i < 10; i++ {
 		d := &Deal{
-			DealID:      big.NewInt(now.Unix() + int64(i)),
-			DataCID:     "datacid1234",
-			PieceCID:    "piececid1234",
-			Provider:    "fprovider1",
-			StartEpoch:  big.NewInt(10),
-			EndEpoch:    big.NewInt(2000),
+			DealID:      big.NewInt(dealID),
+			DataCID:     label,
+			PieceCID:    pieceCID,
+			Provider:    provider,
+			StartEpoch:  big.NewInt(startEpoch),
+			EndEpoch:    big.NewInt(endEpoch),
 			SignedEpoch: big.NewInt(50),
 		}
-
-		log.Debugw("generated deal", "deal", spew.Sdump(d))
-
 		deals = append(deals, d)
 	}
-
-	tree, err := merkletree.NewTree(deals)
+	err = rows.Err()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	mr := tree.MerkleRoot()
-	MerkleRoot = common.BytesToHash(mr).Hex()
-	log.Debugw("merkle root", "root", MerkleRoot)
-
-	for i, d := range deals {
-		a, _, err := tree.GetMerklePath(d)
-		if err != nil {
-			panic(err)
-		}
-
-		var proof string
-		for _, bytes := range a {
-			proof = proof + common.BytesToHash(bytes).Hex()
-		}
-
-		dd := d.(*Deal)
-		dd.Proof = proof
-		(deals[i].(*Deal)).Proof = proof
-		log.Debugw("got proof", "proof", dd.Proof)
-
-		err = insertDeal(db.conn, dd)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return nil
-
+	return deals, nil
 }
 
 func (db *liteDB) DealByID(dealID uint64) (*Deal, error) {
@@ -177,6 +232,26 @@ func (db *liteDB) DealByID(dealID uint64) (*Deal, error) {
 	}
 
 	return RowToDeal(statement.QueryRow(dealID))
+}
+
+func (db *liteDB) insertDeal(deal *Deal) error {
+	insertSQL := `INSERT INTO ` +
+		`deals(DealID, DataCID, PieceCID, Provider, StartEpoch, EndEpoch, SignedEpoch, Proof) VALUES ` +
+		`(?, ?, ?, ?, ?, ?, ?, ?)`
+	statement, err := db.conn.Prepare(insertSQL)
+	if err != nil {
+		return err
+	}
+	_, err = statement.Exec(
+		deal.DealID.Int64(),
+		deal.DataCID,
+		deal.PieceCID,
+		deal.Provider,
+		deal.StartEpoch.Int64(),
+		deal.EndEpoch.Int64(),
+		deal.SignedEpoch.Int64(),
+		deal.Proof)
+	return err
 }
 
 type Scannable interface {
@@ -209,22 +284,27 @@ func RowToDeal(row Scannable) (*Deal, error) {
 	return &deal, nil
 }
 
-func insertDeal(db *sql.DB, deal *Deal) error {
-	insertSQL := `INSERT INTO ` +
-		`deals(DealID, DataCID, PieceCID, Provider, StartEpoch, EndEpoch, SignedEpoch, Proof) VALUES ` +
-		`(?, ?, ?, ?, ?, ?, ?, ?)`
-	statement, err := db.Prepare(insertSQL)
-	if err != nil {
-		return err
+func mockDeals() []merkletree.Content {
+	// make deal ids deterministic
+	shortForm := "2006-Jan-02"
+	now, _ := time.Parse(shortForm, "2021-Feb-05")
+
+	var deals []merkletree.Content
+
+	for i := 1; i < 10; i++ {
+		d := &Deal{
+			DealID:      big.NewInt(now.Unix() + int64(i)),
+			DataCID:     "datacid1234",
+			PieceCID:    "piececid1234",
+			Provider:    "fprovider1",
+			StartEpoch:  big.NewInt(10),
+			EndEpoch:    big.NewInt(2000),
+			SignedEpoch: big.NewInt(50),
+		}
+
+		log.Debugw("generated deal", "deal", spew.Sdump(d))
+
+		deals = append(deals, d)
 	}
-	_, err = statement.Exec(
-		deal.DealID.Int64(),
-		deal.DataCID,
-		deal.PieceCID,
-		deal.Provider,
-		deal.StartEpoch.Int64(),
-		deal.EndEpoch.Int64(),
-		deal.SignedEpoch.Int64(),
-		deal.Proof)
-	return err
+	return deals
 }

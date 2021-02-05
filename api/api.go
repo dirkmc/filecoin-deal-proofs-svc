@@ -10,7 +10,6 @@ import (
 
 	"github.com/dirkmc/filecoin-deal-proofs-svc/db"
 	logging "github.com/ipfs/go-log/v2"
-	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/xerrors"
 )
 
@@ -41,17 +40,26 @@ func (d *API) FetchDealsPeriodically() {
 			case _ = <-ticker.C:
 				log.Debugw("fetch deals")
 
-				d.dbmu.Lock()
-				d.db.GetAllDeals()
-				d.dbmu.Unlock()
-
-				publishMerkleRootToEthereum()
+				d.fetchDeals()
 
 				<-smth
 
 			}
 		}
 	}()
+}
+
+func (d *API) fetchDeals() {
+	d.dbmu.Lock()
+	err := d.db.GetAllDeals()
+	d.dbmu.Unlock()
+
+	if err != nil {
+		log.Errorf("Error fetching deals: %s", err)
+		return
+	}
+
+	publishMerkleRootToEthereum()
 }
 
 func (d *API) DealHandler() func(w http.ResponseWriter, r *http.Request) {
@@ -102,10 +110,16 @@ func sendResponse(w http.ResponseWriter, r *http.Request, res interface{}, err e
 
 	//enableCors(&w)
 
-	w.Write(json)
+	_, err = w.Write(json)
+	if err != nil {
+		log.Errorf("sending response: %s", err)
+	}
 }
 
 func sendErrResponse(w http.ResponseWriter, err error) {
 	json := []byte(fmt.Sprintf(`{"Error":"%s"}`, err))
-	w.Write(json)
+	_, err = w.Write(json)
+	if err != nil {
+		log.Errorf("sending response: %s", err)
+	}
 }

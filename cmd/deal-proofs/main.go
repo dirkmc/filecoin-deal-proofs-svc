@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dirkmc/filecoin-deal-proofs-svc/db"
@@ -34,7 +35,7 @@ func run() error {
 	ctx, cancel := context.WithCancel(ProcessContext())
 	defer cancel()
 
-	apidb, err := db.New()
+	apidb, err := db.New(os.Getenv("REMOTE_DB"))
 	if err != nil {
 		return err
 	}

@@ -1,7 +1,7 @@
 # filecoin-deal-proofs-svc
 
 ```go
-go run .
+REMOTE_DB="DSN" go run .
 ```
 
 http://localhost:9518/deal?dealID=1612483201
