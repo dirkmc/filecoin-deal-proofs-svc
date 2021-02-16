@@ -4,11 +4,13 @@ This is an experimental proof-of-concept web service, which monitors the state o
 
 It was built as part of the Protocol Labs remote hack week held from February 1st, 2020 to February 5th, 2020.
 
+:warning: This repository is a very rough proof-of-concept. If you want to put this on production you will also need to run the [Filecoin Sentinel](https://github.com/filecoin-project/sentinel) service, which this service would use to query state on the Filecoin blockchain :warning:
+
 ## Architecture
 
 The experimental Filecoin Oracle consists of two parts:
 
-1. `smart contracts` - Solidity smart contracts for Ethereum
+1. `smart contracts` - [Solidity smart contracts for Ethereum](https://github.com/nonsense/filecoin-oracle)
 
 2. `web oracle` - A trusted web service which monitors the state of the Filecoin blockchain
 
@@ -37,7 +39,7 @@ Usage of deal-proofs:
   -oracle string
         oracle contract address on ethereum (default "0xd4375467f6CfB0493b5e4AF0601B3a0f2e7D2FcA")
   -production
-        run in prod, and send tx to ethereum rinkeby
+        run in production, and send tx to ethereum network
   -prvkey string
         private key of account
   -remotedb string

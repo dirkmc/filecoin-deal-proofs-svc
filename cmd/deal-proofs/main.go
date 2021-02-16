@@ -18,7 +18,7 @@ import (
 var log = logging.Logger("svc")
 
 var (
-	production = flag.Bool("production", false, "run in prod, and send tx to ethereum rinkeby")
+	production = flag.Bool("production", false, "run in production, and send tx to ethereum network")
 	prvkey     = flag.String("prvkey", "", "private key of account")
 	remotedb   = flag.String("remotedb", "", "remote database")
 	endpoint   = flag.String("endpoint", "https://rinkeby.infura.io/v3/xxxxx", "endpoint to an ethereum node")
