@@ -13,15 +13,15 @@ import (
 )
 
 var (
-	endpoint = "https://rinkeby.infura.io/v3/7e1eddb52ae149eaaa92941def0fd49d"
-	contract = common.HexToAddress("0xd4375467f6CfB0493b5e4AF0601B3a0f2e7D2FcA")
-
-	managerAddress = common.HexToAddress("0x3b8Fd7cE0f4841F1C23B67b20676886ac230Be64")
-	privateKey     = "f0ce4b609fe0865dd37595908c2c01e5e8ca887983f6db638f5ffe5b3067887c"
-
 	signedEpoch = big.NewInt(50)
 
 	Production bool
+	Prvkey     string
+
+	ChainId        *big.Int
+	Endpoint       string
+	OracleContract common.Address
+	ManagerAddress common.Address
 )
 
 func publishMerkleRootToEthereum() {
@@ -29,23 +29,22 @@ func publishMerkleRootToEthereum() {
 		panic("empty merkle root")
 	}
 
-	client, err := ethclient.Dial(endpoint)
+	client, err := ethclient.Dial(Endpoint)
 	if err != nil {
 		panic(err)
 	}
 
-	pk, err := crypto.HexToECDSA(privateKey)
+	pk, err := crypto.HexToECDSA(Prvkey)
 	if err != nil {
 		panic(err)
 	}
 
 	signFn := func(s types.Signer, addr common.Address, tx *types.Transaction) (*types.Transaction, error) {
-		rinkeby := big.NewInt(4)
-		return types.SignTx(tx, types.NewEIP155Signer(rinkeby), pk)
+		return types.SignTx(tx, types.NewEIP155Signer(ChainId), pk)
 	}
 
 	opts := &bind.TransactOpts{
-		From:     managerAddress,
+		From:     ManagerAddress,
 		GasPrice: big.NewInt(5000000000), // 5 gwei
 		Signer:   signFn,
 		Nonce:    nil,
@@ -53,7 +52,7 @@ func publishMerkleRootToEthereum() {
 		GasLimit: uint64(1500000),
 	}
 
-	fo, err := oracle.NewFilecoinService(contract, client)
+	fo, err := oracle.NewFilecoinService(OracleContract, client)
 	if err != nil {
 		panic(err)
 	}

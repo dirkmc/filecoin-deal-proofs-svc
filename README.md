@@ -1,9 +1,45 @@
-# filecoin-deal-proofs-svc
+# Filecoin Oracle on Ethereum - `web oracle`
 
-```go
-REMOTE_DB="DSN" go run .
+This is an experimental proof-of-concept web service, which monitors the state of the Filecoin blockchain.
+
+It was built as part of the Protocol Labs remote hack week held from February 1st, 2020 to February 5th, 2020.
+
+## Architecture
+
+The experimental Filecoin Oracle consists of two parts:
+
+1. `smart contracts` - Solidity smart contracts for Ethereum
+
+2. `web oracle` - A trusted web service which monitors the state of the Filecoin blockchain
+
+---
+
+The web oracle continuously monitors the Filecoin blockchain, once an hour processes the state for all deals, and produces a merkle tree root hash of the serialized data. This service is backed by the [Filecoin Sentinel](https://github.com/filecoin-project/sentinel).
+
+Users are able to query data CIDs of interest on the web oracle and get a merkle inclusion proof with all the relevant data for the data CID at that point in time:`dataCid`, `pieceCid`, `dealId`, `provider`, `startEpoch`, `endEpoch`, `signedEpoch`
+
+## Installation
+
+```
+go install ./...
 ```
 
-http://localhost:9518/deal?dealID=1612483201
+## Usage
 
-verify-proof -dataCID "datacid1234" -dealID 1612483201 -endEpoch 2000 -pieceCID piececid1234 -proof "0x66f50d6484c9b96eee530786960d10a57d794f9163e4fef635cbfbdaee3965630x3821639c7915986e0bce6b5a97d535e4bcee57f320f9395283bb192f773f18da0x10f72897dba52b6440a58f8f843e8fbbc09ff44ffead2d2c6246b62e0f56c0270xdd061920d6106362260f488c8e5cbe7033a40133ff311e4ffdd150000ee5f27e" -provider "fprovider1" -signedEpoch 50 -startEpoch 10
+```
+Usage of deal-proofs:
+  -chainid int
+        chain id; rinkeby == 4 (default 4)
+  -endpoint string
+        endpoint to an ethereum node (default "https://rinkeby.infura.io/v3/xxxxx")
+  -manager string
+        manager address for the oracle contract (default "0x3b8Fd7cE0f4841F1C23B67b20676886ac230Be64")
+  -oracle string
+        oracle contract address on ethereum (default "0xd4375467f6CfB0493b5e4AF0601B3a0f2e7D2FcA")
+  -production
+        run in prod, and send tx to ethereum rinkeby
+  -prvkey string
+        private key of account
+  -remotedb string
+        remote database (DSN)
+```
